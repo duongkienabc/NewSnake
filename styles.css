@@ -1,0 +1,82 @@
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #fafafa;
+}
+#speedRange{
+    align-items: center;
+}
+#gameContainer {
+    text-align: center;
+    position: relative;
+}
+
+canvas {
+    display: block;
+    margin: 0 auto;
+    background-color: #90EE90; /* Màu nền của sân chơi */
+    border: 1px solid #000;
+}
+
+#leaderboard {
+    position: fixed;
+    right: 20px;
+    top: 20px;
+    text-align: center;
+    width: 200px; /* Đặt chiều rộng phù hợp */
+    background: rgba(255, 255, 255, 0.8); /* Màu nền nhẹ nhàng */
+    border: 1px solid #ddd; /* Viền nhẹ */
+    border-radius: 10px;
+    padding: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Bóng đổ nhẹ */
+}
+
+#leaderboard h2 {
+    margin-bottom: 10px;
+}
+
+#leaderboard ol {
+    list-style-type: none;
+    padding: 0;
+}
+
+#leaderboard li {
+    background: #f2f2f2;
+    margin: 5px 0;
+    padding: 5px;
+    border-radius: 5px;
+}
+
+#bonusTimerDisplay {
+    text-align: center;
+    margin-top: 10px;
+    display: none;
+}
+
+#settings {
+    margin-bottom: 10px;
+}
+
+button {
+    margin-top: 10px;
+    padding: 10px 20px;
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+#startButton, #restartButton {
+    display: block;
+    margin: 10px auto;
+}
