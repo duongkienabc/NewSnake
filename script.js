@@ -24,6 +24,10 @@ let normalFoodCount;
 let isGameOver = false;
 let isGameStarted = false;
 
+let foodPulseScale = 1;
+let bonusFoodPulseScale = 1;
+let pulseDirection = 1; // 1 means increasing scale, -1 means decreasing scale
+
 function initializeGame() {
     snake = [];
     for (let i = initialSnakeLength - 1; i >= 0; i--) {
@@ -37,7 +41,7 @@ function initializeGame() {
     bonusFood = null;
     bonusFoodTimer = 0;
 
-    startButton.style.display = "block";
+    startButton.style.display = "none";
     speedRange.style.display = "none";
     speedValue.style.display = "none";
     bonusTimerDisplay.style.display = "none";
@@ -48,28 +52,39 @@ function initializeGame() {
     document.removeEventListener("keydown", changeDirection);
 }
 
+let lastDirectionChange = 0;
+const directionChangeInterval = 10; // Thay đổi khoảng thời gian nếu cần
+
 function changeDirection(event) {
     if (isGameOver) return;
 
-    if (event.keyCode === 37 && direction !== "RIGHT") {
+    const now = Date.now();
+    if (now - lastDirectionChange < directionChangeInterval) return;
+    lastDirectionChange = now;
+
+    const newDirection = event.keyCode;
+
+    // Chỉ cho phép thay đổi hướng nếu không gây ra xung đột
+    if (newDirection === 37 && direction !== "RIGHT") { // Left
         direction = "LEFT";
-    } else if (event.keyCode === 38 && direction !== "DOWN") {
+    } else if (newDirection === 38 && direction !== "DOWN") { // Up
         direction = "UP";
-    } else if (event.keyCode === 39 && direction !== "LEFT") {
+    } else if (newDirection === 39 && direction !== "LEFT") { // Right
         direction = "RIGHT";
-    } else if (event.keyCode === 40 && direction !== "UP") {
+    } else if (newDirection === 40 && direction !== "UP") { // Down
         direction = "DOWN";
     }
 }
 
-function generateFood() {
+
+function generateFood(isBonus = false) {
     let newFood;
     do {
         newFood = {
             x: Math.floor(Math.random() * (canvasSize / box)) * box,
             y: Math.floor(Math.random() * (canvasSize / box)) * box
         };
-    } while (isPositionOccupied(newFood));
+    } while (isPositionOccupied(newFood) || (isBonus && isNearEdgesOrSnake(newFood)));
     return newFood;
 }
 
@@ -81,6 +96,24 @@ function isPositionOccupied(position) {
     }
     return false;
 }
+
+function isNearEdgesOrSnake(position) {
+    // Kiểm tra nếu gần rìa của canvas
+    if (position.x < box * 2 || position.x > canvasSize - box * 2 || position.y < box * 2 || position.y > canvasSize - box * 2) {
+        return true;
+    }
+
+    // Kiểm tra nếu gần cơ thể con rắn
+    for (let segment of snake) {
+        if (position.x >= segment.x - box * 2 && position.x <= segment.x + box * 2 &&
+            position.y >= segment.y - box * 2 && position.y <= segment.y + box * 2) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 
 function draw() {
     if (isGameOver) return;
@@ -95,23 +128,43 @@ function draw() {
             drawSnakeBody(snake[i].x, snake[i].y);
         }
     }
+    
+    foodPulseScale += 0.01 * pulseDirection;
+    if (foodPulseScale >= 1.2 || foodPulseScale <= 1) {
+        pulseDirection *= -1;
+    }
 
+    // Vẽ food với hiệu ứng pulsating
     ctx.fillStyle = "blue";
+    ctx.save();
+    ctx.translate(food.x + box / 2, food.y + box / 2);
+    ctx.scale(foodPulseScale, foodPulseScale);
     ctx.beginPath();
-    ctx.arc(food.x + box / 2, food.y + box / 2, box / 2, 0, 2 * Math.PI);
+    ctx.arc(0, 0, box / 2, 0, 2 * Math.PI);
     ctx.fill();
+    ctx.restore();
 
     if (bonusFood) {
+        bonusFoodPulseScale += 0.01 * pulseDirection;
+        if (bonusFoodPulseScale >= 1.2 || bonusFoodPulseScale <= 1) {
+            pulseDirection *= -1;
+        }
+
         ctx.fillStyle = "gold";
+        ctx.save();
+        ctx.translate(bonusFood.x + box * 2, bonusFood.y + box * 2);
+        ctx.scale(bonusFoodPulseScale, bonusFoodPulseScale);
         ctx.beginPath();
-        ctx.arc(bonusFood.x + box * 2, bonusFood.y + box * 2, box * 2, 0, 2 * Math.PI);
+        ctx.arc(0, 0, box * 2, 0, 2 * Math.PI);
         ctx.fill();
+        ctx.restore();
 
         ctx.fillStyle = "white";
         ctx.fillRect(bonusFood.x + box * 2 - 5, bonusFood.y + box * 2 + box * 2 + 5, box * 4, 10);
         ctx.fillStyle = "black";
         ctx.fillRect(bonusFood.x + box * 2 - 5, bonusFood.y + box * 2 + box * 2 + 5, (box * 4) * (bonusFoodTimer / 6000), 10);
     }
+
 
     let snakeX = snake[0].x;
     let snakeY = snake[0].y;
